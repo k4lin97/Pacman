@@ -1,15 +1,14 @@
 #include "gamemanager.h"
 #include "ui_gamemanager.h"
-#include "losewindow.h"
-#include "winwindow.h"
 
 GameManager::GameManager(QWidget *parent)
-    : QMainWindow(parent)
+    : QDialog(parent)
     , ui(new Ui::GameManager)
     , timer_ghost_death_miliseconds(5000)
     , timer_pacman_death_miliseconds(2000)
 {
     ui->setupUi(this);    
+    this->setAttribute(Qt::WA_DeleteOnClose);
 
     map = new Map();
     game_drawer = new GameDrawer();
@@ -370,18 +369,18 @@ void GameManager::ghostPlayerInteraction()
 
 void GameManager::gameLose()
 {
-    close();
-    LoseWindow lose_window;
-    lose_window.setModal(true);
-    lose_window.exec();
+    this->close();
+    closeWindow = new CloseWindow(pacman->getScore(), false, this);
+    closeWindow->setModal(true);
+    closeWindow->exec();
 }
 
 void GameManager::gameWin()
 {
-    close();
-    WinWindow win_window;
-    win_window.setModal(true);
-    win_window.exec();
+    this->close();
+    closeWindow = new CloseWindow(pacman->getScore(), true, this);
+    closeWindow->setModal(true);
+    closeWindow->exec();
 }
 
 bool GameManager::checkWinningConditions()

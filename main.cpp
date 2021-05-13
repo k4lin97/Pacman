@@ -1,11 +1,11 @@
-#include "gamemanager.h"
+#include "choosewindow.h"
 
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    GameManager w;
+    ChooseWindow w;
     w.show();
     return a.exec();
 }

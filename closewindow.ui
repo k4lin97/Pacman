@@ -1,6 +1,6 @@
 <ui version="4.0">
- <class>LoseWindow</class>
- <widget class="QDialog" name="LoseWindow">
+ <class>CloseWindow</class>
+ <widget name="CloseWindow" class="QDialog">
   <property name="geometry">
    <rect>
     <x>0</x>

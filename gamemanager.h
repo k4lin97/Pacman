@@ -1,7 +1,7 @@
 #ifndef GAMEMANAGER_H
 #define GAMEMANAGER_H
 
-#include <QMainWindow>
+#include <QDialog>
 #include <QLabel>
 #include <QTimer>
 #include <QPixmap>
@@ -14,26 +14,27 @@
 #include "pinkghost.h"
 #include "map.h"
 #include "gamedrawer.h"
+#include "closewindow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class GameManager; }
 QT_END_NAMESPACE
 
-class GameManager : public QMainWindow
+class GameManager : public QDialog
 {
     Q_OBJECT
 
 public:
     GameManager(QWidget *parent = nullptr);
-    ~GameManager();
+    virtual ~GameManager();
 
     void keyPressEvent(QKeyEvent *event);
 
     bool getIsGamePaused() const;
     void setIsGamePaused(bool value);
 
-private slots:
-    void gameEngine();
+protected slots:
+    virtual void gameEngine();
     void changeGhostsStage();
 
     void afterRedGhostDeath();
@@ -42,7 +43,7 @@ private slots:
     void afterPinkGhostDeath();
     void afterPacmanDeath();
 
-private:
+protected:
     Ui::GameManager *ui;
 
     bool isGamePaused;
@@ -58,7 +59,7 @@ private:
     Ghost *red_ghost;
     Ghost *pink_ghost;
     Ghost *orange_ghost;
-    Ghost * blue_ghost;
+    Ghost *blue_ghost;
 
     QTimer *timer_game;
     QTimer *timer_stage;
@@ -74,9 +75,11 @@ private:
     QLabel *game_playing_label;
 
     void ghostPlayerInteraction();
-    void gameLose();
+    virtual void gameLose();
     void gameWin();
 
-    bool checkWinningConditions();
+    virtual bool checkWinningConditions();
+
+    CloseWindow *closeWindow;
 };
 #endif // GAMEMANAGER_H

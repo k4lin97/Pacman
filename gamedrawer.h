@@ -21,6 +21,9 @@ public:
 
     int getDrawing_scale() const;
 
+    // Used only in multiplayer
+    void drawOtherPacman(QPixmap *mapPixmap, int x, int y);
+
 private:
     const int drawing_scale;
 };

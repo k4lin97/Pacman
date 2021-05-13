@@ -17,7 +17,7 @@ Pacman::Pacman()
 
     setMove_direction(Player::none);
 
-    setHealth(3);
+    setHealth(1); // ZMIENIĆ PO TESTACH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     setScore(0);
     setCan_eat(false);
 }
@@ -55,6 +55,16 @@ bool Pacman::getCan_eat() const
 void Pacman::setCan_eat(bool value)
 {
     can_eat = value;
+}
+
+void Pacman::setFirst_x(int value)
+{
+    first_x = value;
+}
+
+void Pacman::setFirst_y(int value)
+{
+    first_y = value;
 }
 
 void Pacman::move(Map *map)

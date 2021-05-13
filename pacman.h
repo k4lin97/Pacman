@@ -18,6 +18,9 @@ public:
     bool getCan_eat() const;
     void setCan_eat(bool value);
 
+    void setFirst_x(int value);
+    void setFirst_y(int value);
+
     void move(Map *map);
 
 private:

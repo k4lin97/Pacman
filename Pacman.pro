@@ -10,39 +10,53 @@ CONFIG += c++11
 
 SOURCES += \
     blueghost.cpp \
+    choosewindow.cpp \
+    client.cpp \
+    closewindow.cpp \
     gamedrawer.cpp \
     ghost.cpp \
-    losewindow.cpp \
     main.cpp \
     gamemanager.cpp \
+    maingamemanager.cpp \
     map.cpp \
+    multiplayergamemanager.cpp \
+    networkconnection.cpp \
     orangeghost.cpp \
     pacman.cpp \
     pinkghost.cpp \
     player.cpp \
     redghost.cpp \
-    winwindow.cpp
+    secondgamemanager.cpp
 
 HEADERS += \
     blueghost.h \
+    choosewindow.h \
+    client.h \
+    closewindow.h \
     gamedrawer.h \
     gamemanager.h \
     ghost.h \
-    losewindow.h \
+    maingamemanager.h \
     map.h \
+    multiplayergamemanager.h \
+    networkconnection.h \
     orangeghost.h \
     pacman.h \
     pinkghost.h \
     player.h \
     redghost.h \
-    winwindow.h
+    secondgamemanager.h
 
 FORMS += \
-    gamemanager.ui \
-    losewindow.ui \
-    winwindow.ui
+    choosewindow.ui \
+    closewindow.ui \
+    gamemanager.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES +=
+
+LIBS += -lws2_32

@@ -92,3 +92,12 @@ int GameDrawer::getDrawing_scale() const
 {
     return drawing_scale;
 }
+
+void GameDrawer::drawOtherPacman(QPixmap *mapPixmap, int x, int y)
+{
+    QPainter painter(mapPixmap);
+    painter.setBrush(Qt::yellow);
+    painter.setPen(Qt::NoPen);
+    painter.drawRect(x * drawing_scale, y * drawing_scale, drawing_scale, drawing_scale);
+    painter.end();
+}
