@@ -8,10 +8,17 @@ SecondGameManager::SecondGameManager(QWidget *parent)
     pacman->setFirst_y(23);
     pacman->setX(pacman->getFirst_x());
     pacman->setY(pacman->getFirst_y());
+
     setOtherPacmanPositionX(pacman->getX() - 1);
     setOtherPacmanPositionY(pacman->getY());
+
     map->setMapAtPosition(14, 23, Map::none);
     map->score_point_number_decrement();
+}
+
+SecondGameManager::~SecondGameManager()
+{
+
 }
 
 void SecondGameManager::gameEngine()
@@ -36,32 +43,18 @@ void SecondGameManager::gameEngine()
 
             pink_ghost->setX(getPinkGhostPositionX());
             pink_ghost->setY(getPinkGhostPositionY());
-            /*red_ghost->checkWalls(map);
-            red_ghost->calculateTarget(pacman);
-            red_ghost->move();
 
-            pink_ghost->checkWalls(map);
-            pink_ghost->calculateTarget(pacman);
-            pink_ghost->move();
-
-            orange_ghost->checkWalls(map);
-            orange_ghost->calculateTarget(pacman);
-            orange_ghost->move();
-
-            blue_ghost->checkWalls(map);
-            blue_ghost->calculateTarget(pacman);
-            blue_ghost->move();*/
-
-            ghostPlayerInteraction();
+            //ghostPlayerInteraction();
         }
     } else {
-        //ingore
+        // Ignore
     }
 
     setPacmanPositionX(pacman->getX());
     setPacmanPositionY(pacman->getY());
 
-    map->setMapAtPosition(getOtherPacmanPositionX(), getOtherPacmanPositionY(), Map::none);    
+    // Tylko do wyświetlenia, nie trzeba zmniejszać max score points, ponieważ do wygrania jest to liczone przez serwer
+    map->setMapAtPosition(getOtherPacmanPositionX(), getOtherPacmanPositionY(), Map::none);
 
     game_drawer->drawMap(mapPixmap, map);
     game_drawer->drawPlayer(mapPixmap, pacman);
@@ -79,4 +72,46 @@ void SecondGameManager::gameEngine()
     timer_stage_label->setText("Change stage in: " + timerText);
     QString boolText = getIsGamePaused() ? "Paused" : "Playing";
     game_playing_label->setText(boolText);
+}
+
+void SecondGameManager::ghostPlayerInteraction()
+{
+    if ((red_ghost->getX() == pacman->getX()) && (red_ghost->getY() == pacman->getY())) {
+        if (pacman->getCan_eat()) {
+        } else {
+            if (pacman->getHealth() > 1) {
+
+            } else {
+                gameLose();
+            }
+        }
+    } else if ((orange_ghost->getX() == pacman->getX()) && (orange_ghost->getY() == pacman->getY())) {
+        if (pacman->getCan_eat()) {
+        } else {
+            if (pacman->getHealth() > 1) {
+
+            } else {
+                gameLose();
+            }
+        }
+    } else if ((blue_ghost->getX() == pacman->getX()) && (blue_ghost->getY() == pacman->getY())) {
+        if (pacman->getCan_eat()) {
+        } else {
+            if (pacman->getHealth() > 1) {
+
+            } else {
+                gameLose();
+            }
+        }
+    } else if ((pink_ghost->getX() == pacman->getX()) && (pink_ghost->getY() == pacman->getY())) {
+        if (pacman->getCan_eat()) {
+
+        } else {
+            if (pacman->getHealth() > 1) {
+
+            } else {
+                gameLose();
+            }
+        }
+    }
 }

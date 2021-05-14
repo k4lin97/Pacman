@@ -46,10 +46,6 @@ void BlueGhost::calculateTarget(Player *pacman)
             temp_x = (pacman->getX());
             temp_y = (pacman->getY() + 2);
         }
-        /*
-         * TUTAJ POWIINO BYC - REDGHOST A NIE PACMAN
-         * ZMIENIC TO??
-         * */
         setTarget_x(temp_x + (temp_x - pacman->getX()));
         //dla y minus poniewaz w dol ida wieksze wartosci
         setTarget_y(temp_y - (temp_y - pacman->getY()));

@@ -10,7 +10,7 @@ class NetworkConnection
 {
 public:
     NetworkConnection();
-    int connectToServer();
+    int connectToServer(std::string _serverIPAddress);
 
 protected:
     std::string serverIPAddress;

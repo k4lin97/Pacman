@@ -47,12 +47,6 @@ GameManager::GameManager(QWidget *parent)
 
     mapPixmap = new QPixmap(map->getMap_width() * game_drawer->getDrawing_scale(), map->getMap_height() * game_drawer->getDrawing_scale());
 
-    timer_ghost_death = new QTimer(this);
-    timer_ghost_death->setSingleShot(true);
-
-    timer_pacman_death = new QTimer(this);
-    timer_pacman_death->setSingleShot(true);
-
     timer_game = new QTimer(this);
     connect(timer_game, SIGNAL(timeout()), this, SLOT(gameEngine()));
     timer_game->start(200);
@@ -69,10 +63,16 @@ GameManager::~GameManager()
 {
     delete ui;
 
-    delete map;
+    //delete map;
     delete game_drawer;
 
-    delete timer_game;
+    delete pacman;
+    delete red_ghost;
+    delete pink_ghost;
+    delete orange_ghost;
+    delete blue_ghost;
+
+    /*delete timer_game;
     delete timer_stage;
     delete timer_ghost_death;
     delete timer_pacman_death;
@@ -83,7 +83,9 @@ GameManager::~GameManager()
     delete score_label;
     delete health_label;
     delete timer_stage_label;
-    delete game_playing_label;
+    delete game_playing_label;*/
+
+    //delete closeWindow;
 }
 
 void GameManager::keyPressEvent(QKeyEvent *event)
@@ -178,24 +180,17 @@ void GameManager::changeGhostsStage()
     pink_ghost->changeStage();
 }
 
-void GameManager::afterRedGhostDeath()
+void GameManager::afterGhostDeath()
 {
-    red_ghost->setMove_direction(Player::left);
-}
-
-void GameManager::afterBlueGhostDeath()
-{
-    blue_ghost->setMove_direction(Player::down);
-}
-
-void GameManager::afterOrangeGhostDeath()
-{
-    orange_ghost->setMove_direction(Player::down);
-}
-
-void GameManager::afterPinkGhostDeath()
-{
-    pink_ghost->setMove_direction(Player::right);
+    if (red_ghost->getMove_direction() == Player::none) {
+        red_ghost->setMove_direction(Player::left);
+    } else if (blue_ghost->getMove_direction() == Player::none) {
+        blue_ghost->setMove_direction(Player::down);
+    } else if (orange_ghost->getMove_direction() == Player::none) {
+        orange_ghost->setMove_direction(Player::down);
+    } else if (pink_ghost->getMove_direction() == Player::none) {
+        pink_ghost->setMove_direction(Player::right);
+    }
 }
 
 void GameManager::afterPacmanDeath()
@@ -210,156 +205,40 @@ void GameManager::ghostPlayerInteraction()
 {
     if ((red_ghost->getX() == pacman->getX()) && (red_ghost->getY() == pacman->getY())) {
         if (pacman->getCan_eat()) {
-            red_ghost->setX(red_ghost->getFirst_x());
-            red_ghost->setY(red_ghost->getFirst_y());
-
-            red_ghost->setMove_direction(Ghost::none);
-            pacman->setCan_eat(false);
-
-            connect(timer_ghost_death, SIGNAL(timeout()), this, SLOT(afterRedGhostDeath()));
-            timer_ghost_death->start(timer_ghost_death_miliseconds);
+            pacmanEatsGhost(red_ghost);
         } else {
             if (pacman->getHealth() > 1) {
-                pacman->setHealth(pacman->getHealth() - 1);
-                pacman->setX(pacman->getFirst_x());
-                pacman->setY(pacman->getFirst_y());
-                pacman->setMove_direction(Player::none);
-
-                red_ghost->setX(red_ghost->getFirst_x());
-                red_ghost->setY(red_ghost->getFirst_y());
-                red_ghost->setMove_direction(Ghost::none);
-
-                orange_ghost->setX(orange_ghost->getFirst_x());
-                orange_ghost->setY(orange_ghost->getFirst_y());
-                orange_ghost->setMove_direction(Ghost::none);
-
-                blue_ghost->setX(blue_ghost->getFirst_x());
-                blue_ghost->setY(blue_ghost->getFirst_y());
-                blue_ghost->setMove_direction(Ghost::none);
-
-                pink_ghost->setX(pink_ghost->getFirst_x());
-                pink_ghost->setY(pink_ghost->getFirst_y());
-                pink_ghost->setMove_direction(Ghost::none);
-
-                connect(timer_pacman_death, SIGNAL(timeout()), this, SLOT(afterPacmanDeath()));
-                timer_pacman_death->start(timer_pacman_death_miliseconds);
+                pacmanEatenButNotDead();
             } else {
                 gameLose();
             }
         }
     } else if ((orange_ghost->getX() == pacman->getX()) && (orange_ghost->getY() == pacman->getY())) {
         if (pacman->getCan_eat()) {
-            orange_ghost->setX(orange_ghost->getFirst_x());
-            orange_ghost->setY(orange_ghost->getFirst_y());
-
-            orange_ghost->setMove_direction(Ghost::none);
-            pacman->setCan_eat(false);
-
-            connect(timer_ghost_death, SIGNAL(timeout()), this, SLOT(afterOrangeGhostDeath()));
-            timer_ghost_death->start(timer_ghost_death_miliseconds);
+            pacmanEatsGhost(orange_ghost);
         } else {
             if (pacman->getHealth() > 1) {
-                pacman->setHealth(pacman->getHealth() - 1);
-                pacman->setX(pacman->getFirst_x());
-                pacman->setY(pacman->getFirst_y());
-                pacman->setMove_direction(Player::none);
-
-                red_ghost->setX(red_ghost->getFirst_x());
-                red_ghost->setY(red_ghost->getFirst_y());
-                red_ghost->setMove_direction(Ghost::none);
-
-                orange_ghost->setX(orange_ghost->getFirst_x());
-                orange_ghost->setY(orange_ghost->getFirst_y());
-                orange_ghost->setMove_direction(Ghost::none);
-
-                blue_ghost->setX(blue_ghost->getFirst_x());
-                blue_ghost->setY(blue_ghost->getFirst_y());
-                blue_ghost->setMove_direction(Ghost::none);
-
-                pink_ghost->setX(pink_ghost->getFirst_x());
-                pink_ghost->setY(pink_ghost->getFirst_y());
-                pink_ghost->setMove_direction(Ghost::none);
-
-                connect(timer_pacman_death, SIGNAL(timeout()), this, SLOT(afterPacmanDeath()));
-                timer_pacman_death->start(timer_pacman_death_miliseconds);
+                pacmanEatenButNotDead();
             } else {
                 gameLose();
             }
         }
     } else if ((blue_ghost->getX() == pacman->getX()) && (blue_ghost->getY() == pacman->getY())) {
         if (pacman->getCan_eat()) {
-            blue_ghost->setX(blue_ghost->getFirst_x());
-            blue_ghost->setY(blue_ghost->getFirst_y());
-
-            blue_ghost->setMove_direction(Ghost::none);
-            pacman->setCan_eat(false);
-
-            connect(timer_ghost_death, SIGNAL(timeout()), this, SLOT(afterBlueGhostDeath()));
-            timer_ghost_death->start(timer_ghost_death_miliseconds);
+            pacmanEatsGhost(blue_ghost);
         } else {
             if (pacman->getHealth() > 1) {
-                pacman->setHealth(pacman->getHealth() - 1);
-                pacman->setX(pacman->getFirst_x());
-                pacman->setY(pacman->getFirst_y());
-                pacman->setMove_direction(Player::none);
-
-                red_ghost->setX(red_ghost->getFirst_x());
-                red_ghost->setY(red_ghost->getFirst_y());
-                red_ghost->setMove_direction(Ghost::none);
-
-                orange_ghost->setX(orange_ghost->getFirst_x());
-                orange_ghost->setY(orange_ghost->getFirst_y());
-                orange_ghost->setMove_direction(Ghost::none);
-
-                blue_ghost->setX(blue_ghost->getFirst_x());
-                blue_ghost->setY(blue_ghost->getFirst_y());
-                blue_ghost->setMove_direction(Ghost::none);
-
-                pink_ghost->setX(pink_ghost->getFirst_x());
-                pink_ghost->setY(pink_ghost->getFirst_y());
-                pink_ghost->setMove_direction(Ghost::none);
-
-                connect(timer_pacman_death, SIGNAL(timeout()), this, SLOT(afterPacmanDeath()));
-                timer_pacman_death->start(timer_pacman_death_miliseconds);
+                pacmanEatenButNotDead();
             } else {
                 gameLose();
             }
         }
     } else if ((pink_ghost->getX() == pacman->getX()) && (pink_ghost->getY() == pacman->getY())) {
         if (pacman->getCan_eat()) {
-            pink_ghost->setX(pink_ghost->getFirst_x());
-            pink_ghost->setY(pink_ghost->getFirst_y());
-
-            pink_ghost->setMove_direction(Ghost::none);
-            pacman->setCan_eat(false);
-
-            connect(timer_ghost_death, SIGNAL(timeout()), this, SLOT(afterPinkGhostDeath()));
-            timer_ghost_death->start(timer_ghost_death_miliseconds);
+            pacmanEatsGhost(pink_ghost);
         } else {
             if (pacman->getHealth() > 1) {
-                pacman->setHealth(pacman->getHealth() - 1);
-                pacman->setX(pacman->getFirst_x());
-                pacman->setY(pacman->getFirst_y());
-                pacman->setMove_direction(Player::none);
-
-                red_ghost->setX(red_ghost->getFirst_x());
-                red_ghost->setY(red_ghost->getFirst_y());
-                red_ghost->setMove_direction(Ghost::none);
-
-                orange_ghost->setX(orange_ghost->getFirst_x());
-                orange_ghost->setY(orange_ghost->getFirst_y());
-                orange_ghost->setMove_direction(Ghost::none);
-
-                blue_ghost->setX(blue_ghost->getFirst_x());
-                blue_ghost->setY(blue_ghost->getFirst_y());
-                blue_ghost->setMove_direction(Ghost::none);
-
-                pink_ghost->setX(pink_ghost->getFirst_x());
-                pink_ghost->setY(pink_ghost->getFirst_y());
-                pink_ghost->setMove_direction(Ghost::none);
-
-                connect(timer_pacman_death, SIGNAL(timeout()), this, SLOT(afterPacmanDeath()));
-                timer_pacman_death->start(timer_pacman_death_miliseconds);
+                pacmanEatenButNotDead();
             } else {
                 gameLose();
             }
@@ -390,4 +269,49 @@ bool GameManager::checkWinningConditions()
     } else {
         return false;
     }
+}
+
+void GameManager::pacmanEatenButNotDead()
+{
+    timer_pacman_death = new QTimer(this);
+    timer_pacman_death->setSingleShot(true);
+
+    pacman->setHealth(pacman->getHealth() - 1);
+    pacman->setX(pacman->getFirst_x());
+    pacman->setY(pacman->getFirst_y());
+    pacman->setMove_direction(Player::none);
+
+    red_ghost->setX(red_ghost->getFirst_x());
+    red_ghost->setY(red_ghost->getFirst_y());
+    red_ghost->setMove_direction(Ghost::none);
+
+    orange_ghost->setX(orange_ghost->getFirst_x());
+    orange_ghost->setY(orange_ghost->getFirst_y());
+    orange_ghost->setMove_direction(Ghost::none);
+
+    blue_ghost->setX(blue_ghost->getFirst_x());
+    blue_ghost->setY(blue_ghost->getFirst_y());
+    blue_ghost->setMove_direction(Ghost::none);
+
+    pink_ghost->setX(pink_ghost->getFirst_x());
+    pink_ghost->setY(pink_ghost->getFirst_y());
+    pink_ghost->setMove_direction(Ghost::none);
+
+    connect(timer_pacman_death, SIGNAL(timeout()), this, SLOT(afterPacmanDeath()));
+    timer_pacman_death->start(timer_pacman_death_miliseconds);
+}
+
+void GameManager::pacmanEatsGhost(Ghost *ghost)
+{
+    timer_ghost_death = new QTimer(this);
+    timer_ghost_death->setSingleShot(true);
+
+    ghost->setX(ghost->getFirst_x());
+    ghost->setY(ghost->getFirst_y());
+
+    ghost->setMove_direction(Ghost::none);
+    pacman->setCan_eat(false);
+
+    connect(timer_ghost_death, SIGNAL(timeout()), this, SLOT(afterGhostDeath()));
+    timer_ghost_death->start(timer_ghost_death_miliseconds);
 }

@@ -6,9 +6,9 @@ NetworkConnection::NetworkConnection()
 
 }
 
-int NetworkConnection::connectToServer()
+int NetworkConnection::connectToServer(std::string _serverIPAddress)
 {
-    serverIPAddress = "127.0.0.1";
+    serverIPAddress = _serverIPAddress;
 
     // Inicjalizacja WSA
     result = WSAStartup(MAKEWORD(2, 2), &wsaData);

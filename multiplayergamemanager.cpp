@@ -26,17 +26,8 @@ MultiplayerGameManager::MultiplayerGameManager(QWidget *parent)
 
 MultiplayerGameManager::~MultiplayerGameManager()
 {
-
+    //delete lose_window;
 }
-
-/*
- * Returns a pointer to a map.
-*/
-Map *MultiplayerGameManager::getMap() const
-{
-    return map;
-}
-
 
 QTimer *MultiplayerGameManager::getTimer_game() const
 {
@@ -109,7 +100,6 @@ void MultiplayerGameManager::closeGame()
     lose_window = new CloseWindow(pacman->getScore(), false, this);
     lose_window->setModal(true);
     lose_window->exec();
-    //lose_window->show();
 }
 
 int MultiplayerGameManager::getPinkGhostPositionX() const

@@ -10,6 +10,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QBoxLayout>
+#include <QLineEdit>
 
 namespace Ui {
 class ChooseWindow;
@@ -61,6 +62,7 @@ private:
     QHBoxLayout *singlePlayerButtonsLayout;
     QHBoxLayout *multiPlayerButtonsLayout;
     QVBoxLayout *exitButtonLayout;
+    QHBoxLayout *IPinputLayout;
 
     GameManager *singlePlayerGame;
     MainGameManager *playerOneGame;
@@ -69,6 +71,8 @@ private:
     bool isConnectedToServer;
     bool isPlayerOnePlaying;
     bool isPlayerTwoPlaying;
+
+    QLineEdit *IPinput;
 };
 
 #endif // CHOOSEWINDOW_H

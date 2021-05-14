@@ -15,6 +15,9 @@ ChooseWindow::ChooseWindow(QWidget *parent) :
     this->setWindowTitle("Choose game!");
     this->setFixedSize(400, 200);
 
+    IPinput = new QLineEdit(this);
+    IPinput->setText("127.0.0.1");
+
     exitButton = new QPushButton("Exit", this);
     singlePlayerButton = new QPushButton("Single player", this);
     connectToServerButton = new QPushButton("Connect to server", this);
@@ -30,6 +33,9 @@ ChooseWindow::ChooseWindow(QWidget *parent) :
     singlePlayerButtonsLayout = new QHBoxLayout();
     singlePlayerButtonsLayout->addWidget(singlePlayerButton);
 
+    IPinputLayout = new QHBoxLayout();
+    IPinputLayout->addWidget(IPinput);
+
     multiPlayerButtonsLayout = new QHBoxLayout();
     multiPlayerButtonsLayout->addWidget(connectToServerButton);
     multiPlayerButtonsLayout->addWidget(playerOneButton);
@@ -40,6 +46,7 @@ ChooseWindow::ChooseWindow(QWidget *parent) :
 
     mainLayout = new QVBoxLayout(this);
     mainLayout->addLayout(singlePlayerButtonsLayout);
+    mainLayout->addLayout(IPinputLayout);
     mainLayout->addLayout(multiPlayerButtonsLayout);
     mainLayout->addLayout(exitButtonLayout);
     this->setLayout(mainLayout);
@@ -75,7 +82,10 @@ ChooseWindow::~ChooseWindow()
 
     delete serverDialogLabel;
     delete clientDialogLabel;
-    delete serverCompileLabel;*/
+    delete serverCompileLabel;
+
+    delete IPinputLayout;
+    delete IPinput;*/
 
     delete singlePlayerGame;
     delete playerOneGame;
@@ -90,21 +100,16 @@ void ChooseWindow::exitButtonSlot()
 
 void ChooseWindow::singlePlayerButtonSlot()
 {
-    if (!isConnectedToServer) {
-        singlePlayerGame = new GameManager(this);
-        singlePlayerGame->show();
-    } else {
-        /*
-         * cos tu dodac?
-         * */
-    }
+    singlePlayerGame = new GameManager(this);
+    singlePlayerGame->show();
 }
 
 void ChooseWindow::connectToServerButtonSlot()
 {
+    std::string ipAddressToConnect = IPinput->text().toLocal8Bit().constData();
     if(!isConnectedToServer) {
         sender = new Client(playerOneGame, playerTwoGame);
-        if (sender->connectToServer() == 0) {
+        if (sender->connectToServer(ipAddressToConnect) == 0) {
             isConnectedToServer = true;
         } else {
             isConnectedToServer = false;

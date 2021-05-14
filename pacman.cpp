@@ -17,7 +17,7 @@ Pacman::Pacman()
 
     setMove_direction(Player::none);
 
-    setHealth(1); // ZMIENIĆ PO TESTACH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    setHealth(3);
     setScore(0);
     setCan_eat(false);
 }

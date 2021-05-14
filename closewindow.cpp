@@ -34,11 +34,11 @@ CloseWindow::~CloseWindow()
 {
     delete ui;
 
-    delete exitButton;
+    /*delete exitButton;
 
     delete mainLayout;
 
-    delete label;
+    delete label;*/
 }
 
 void CloseWindow::exitButtonSlot()

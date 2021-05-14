@@ -116,7 +116,7 @@ void Client::prepareMessage()
 
     // End
     sendBuff[g_BUFFSIZE - 1] = '\0';
-    qDebug() << "Prepared message: " << sendBuff;
+    //qDebug() << "Prepared message: " << sendBuff;
 }
 
 /*
@@ -144,7 +144,7 @@ void Client::reciveFromServer()
 
     bytesRecv = recv(mainSocket, recvBuff, g_BUFFSIZE, 0);
     //qDebug() << "Odebralem bajtow: " << bytesRecv;
-    qDebug() << "Recieved buffer: " << recvBuff;
+    //qDebug() << "Recieved buffer: " << recvBuff;
 
     // Został zmieniony stan w mainGame dlatego zmieniamy w secondGame
     if (recvBuff[0] == '1') {
@@ -184,8 +184,8 @@ void Client::reciveFromServer()
     mainGame->setScorePoints((((recvBuff[26] - '0') * 100) + ((recvBuff[27] - '0') * 10) + (recvBuff[28] - '0')));
     secondGame->setScorePoints((((recvBuff[26] - '0') * 100) + ((recvBuff[27] - '0') * 10) + (recvBuff[28] - '0')));
 
-    // Close Lose
-    if (((recvBuff[29] - '0') == 1) || ((recvBuff[30] - '0') == 1)){
+    // Close Game Lose
+    if (((recvBuff[29] - '0') == 1) || ((recvBuff[30] - '0') == 1)) {
         secondGame->closeGame();
         mainGame->closeGame();
     }

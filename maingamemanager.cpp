@@ -8,6 +8,11 @@ MainGameManager::MainGameManager(QWidget *parent)
     setOtherPacmanPositionY(pacman->getY());
 }
 
+MainGameManager::~MainGameManager()
+{
+
+}
+
 void MainGameManager::gameEngine()
 {
     if (!getIsGamePaused()) {
@@ -35,10 +40,10 @@ void MainGameManager::gameEngine()
             blue_ghost->calculateTarget(pacman);
             blue_ghost->move();
 
-            ghostPlayerInteraction();
+            //ghostPlayerInteraction();
         }
     } else {
-        //ingore
+        // Ignore
     }
 
     setRedGhostPositionX(red_ghost->getX());
@@ -75,4 +80,3 @@ void MainGameManager::gameEngine()
     QString boolText = getIsGamePaused() ? "Paused" : "Playing";
     game_playing_label->setText(boolText);
 }
-

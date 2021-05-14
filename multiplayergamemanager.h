@@ -8,9 +8,7 @@ class MultiplayerGameManager : public GameManager
 {
 public:
     MultiplayerGameManager(QWidget *parent = nullptr);
-    virtual ~MultiplayerGameManager();
-
-    Map *getMap() const;
+    ~MultiplayerGameManager();
 
     QTimer *getTimer_game() const;
 
@@ -58,8 +56,9 @@ public:
     int getGameLoseClose() const;
 
 protected:
-    virtual bool checkWinningConditions() override;
-    virtual void gameLose() override;
+    void gameLose() override;
+
+    bool checkWinningConditions() override;
 
 private:
     int redGhostPositionX;

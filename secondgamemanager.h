@@ -7,10 +7,13 @@ class SecondGameManager : public MultiplayerGameManager
 {
 public:
     SecondGameManager(QWidget *parent = nullptr);
+    ~SecondGameManager();
 
 private slots:
-    virtual void gameEngine() override;
+    void gameEngine() override;
 
+private:
+    void ghostPlayerInteraction() override;
 };
 
 #endif // SECONDGAMEMANAGER_H

@@ -37,10 +37,7 @@ protected slots:
     virtual void gameEngine();
     void changeGhostsStage();
 
-    void afterRedGhostDeath();
-    void afterBlueGhostDeath();
-    void afterOrangeGhostDeath();
-    void afterPinkGhostDeath();
+    void afterGhostDeath();
     void afterPacmanDeath();
 
 protected:
@@ -74,11 +71,14 @@ protected:
     QLabel *timer_stage_label;
     QLabel *game_playing_label;
 
-    void ghostPlayerInteraction();
-    virtual void gameLose();
     void gameWin();
 
+    virtual void ghostPlayerInteraction();
+    virtual void gameLose();
     virtual bool checkWinningConditions();
+
+    void pacmanEatenButNotDead();
+    void pacmanEatsGhost(Ghost *ghost);
 
     CloseWindow *closeWindow;
 };

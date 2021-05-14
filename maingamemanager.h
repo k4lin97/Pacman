@@ -7,10 +7,10 @@ class MainGameManager : public MultiplayerGameManager
 {
 public:
     MainGameManager(QWidget *parent = nullptr);
+    ~MainGameManager();
 
 private slots:
-    virtual void gameEngine() override;
-
+    void gameEngine() override;
 };
 
 #endif // MAINGAMEMANAGER_H
