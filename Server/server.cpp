@@ -4,216 +4,251 @@
 #include <string>
 
 #define g_PORT 27015
-#define g_BUFFSIZE 64
+#define g_BUFFSIZE 256
 
 #define map_height 31
 #define map_width 28
-
-const char *BREAK_MESSAGE = "#";
-const char *BREAK_DATA = "$";
 
 char mainGamePaused;
 char secondGamePaused;
 
 int scorePoints;
 
-char mainClientMessage[g_BUFFSIZE] = "";  // ROZKMINIĆ JAKI POWINIEN BYĆ ROZMIAR
-char secondClientMessage[g_BUFFSIZE / 2] = "";
+char firstClientMessage[g_BUFFSIZE] = "";   // Message received on first socket
+char secondClientMessage[g_BUFFSIZE] = "";  // Message received on second socket
 
-SOCKET mainSocket;  // Główne gniazdo
+char mainGameMessage[g_BUFFSIZE] = "";    // Message from main game
+char secondGameMessage[g_BUFFSIZE] = "";  // Message from second game
 
-void processData(char *recievedBuffer);
+char serverReplyToMainGame[g_BUFFSIZE] = "";
+char serverReplyToSecondGame[g_BUFFSIZE] = "";
+
+SOCKET mainSocket;  // Main socket
+SOCKET mainGameAcceptSocket = SOCKET_ERROR;
+SOCKET secondGameAcceptSocket = SOCKET_ERROR;
+
 void sendToClient();
-int findChar(char *my_array, const char *my_char);
 
 int main() {
-    std::string serverIPAddress = "127.0.0.1";
-    //std::cout << "Podaj adres IP. Dla jednej maszyny 127.0.0.1" << std::endl;
-    //std::cin >> serverIPAddress;
-    while (true) {
-        mainGamePaused = '1';  // 1 - true
-        secondGamePaused = '1';
+    std::string serverIPAddress;
+    std::cout << "Enter the IP address. For one machine 127.0.0.1" << std::endl;
+    std::cin >> serverIPAddress;
 
-        scorePoints = 0;
-        
+    mainGamePaused = '1';  // 1 - true
+    secondGamePaused = '1';
 
-        WSADATA wsaData;
-        int result;
+    scorePoints = 0;
 
-        // Inicjalizacja wsa
-        result = WSAStartup(MAKEWORD(2, 2), &wsaData);
-        if (result != 0) {
-            std::cout << "Initialization error." << std::endl;
-            return 1;
-        }
+    WSADATA wsaData;
+    int result;
 
-        // Utworzenie gniazda TCP
-        // SOCKET mainSocket;  // Główne gniazdo
-        if ((mainSocket = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
-            std::cout << "Error creating socket." << std::endl;
-            WSACleanup();
-            return 1;
-        }
+    // WSA initialization
+    result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (result != 0) {
+        std::cout << "Initialization error." << std::endl;
+        return 1;
+    }
 
-        // Ustawienie adresu
-        sockaddr_in srv_addr;  // Mój adres
-        srv_addr.sin_family = AF_INET;
-        srv_addr.sin_port = htons(g_PORT);
-        srv_addr.sin_addr.s_addr = inet_addr(serverIPAddress.c_str());
-        memset(&(srv_addr.sin_zero), '\0', sizeof(srv_addr.sin_zero));
+    // Create TCP socket
+    if ((mainSocket = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
+        std::cout << "Error creating socket." << std::endl;
+        WSACleanup();
+        return 1;
+    }
 
-        // Bindowanie stworzonego gniazda (przypisanie go do adresu)
-        if (bind(mainSocket, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) ==
-            SOCKET_ERROR) {
-            std::cout << "Error creating socket." << std::endl;
-            closesocket(mainSocket);
-            WSACleanup();
-            return 1;
-        }
+    // Create address
+    sockaddr_in srv_addr;  // My address
+    srv_addr.sin_family = AF_INET;
+    srv_addr.sin_port = htons(g_PORT);
+    srv_addr.sin_addr.s_addr = inet_addr(serverIPAddress.c_str());
+    memset(&(srv_addr.sin_zero), '\0', sizeof(srv_addr.sin_zero));
 
-        // Tutaj serwer może już nasłuchiwać na wybranym porcie
-        if (listen(mainSocket, 1) == SOCKET_ERROR) {
-            std::cout << "Error listening on socket." << std::endl;
-            WSACleanup();
-            return 1;
-        }
-
-        // Funkcja accept przyjmuje próbę połączenia od klienta
-        // i zwraca wskaźnik na gniazdo, które służy do komunikacji z danym
-        // klientem SOCKET_ERROR jest zwracany gdy jet błąd lub żaden klient nie
-        // próbował się połączyć
-        SOCKET acceptSocket = SOCKET_ERROR;
-        std::cout << "Waiting for a client to connect..." << std::endl;
-
-        while (acceptSocket == SOCKET_ERROR) {
-            acceptSocket = accept(mainSocket, NULL, NULL);
-        }
-
-        std::cout << "Client connected." << std::endl;
-        // Zastępujemy uchwyt naszego gniazda tym otrzymanym z accept – tamto
-        // było potrzebne tylko do połączenia się z klientem
-        mainSocket = acceptSocket;
-
-        int bytesRecv = SOCKET_ERROR;
-        char recvBuff[g_BUFFSIZE] = "";
-
-        do {
-            bytesRecv = recv(mainSocket, recvBuff, g_BUFFSIZE, 0);
-            // std::cout << "Received text: " << recvBuff << std::endl;
-            processData(recvBuff);
-            sendToClient();
-        } while (bytesRecv > 0);
-
-        // system("pause");
-        system("cls");
-        closesocket(acceptSocket);
+    // Bind created socket
+    if (bind(mainSocket, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) ==
+        SOCKET_ERROR) {
+        std::cout << "Error creating socket." << std::endl;
         closesocket(mainSocket);
         WSACleanup();
+        return 1;
     }
+
+    // Server can listen on mainSocket
+    if (listen(mainSocket, SOMAXCONN) == SOCKET_ERROR) {
+        std::cout << "Error listening on socket." << std::endl;
+        WSACleanup();
+        return 1;
+    }
+
+    std::cout << "Waiting for a client 1 to connect..." << std::endl;
+    while (mainGameAcceptSocket == SOCKET_ERROR) {
+        mainGameAcceptSocket = accept(mainSocket, NULL, NULL);
+    }
+    std::cout << "Client 1 connected." << std::endl;
+
+    std::cout << "Waiting for a client 2 to connect..." << std::endl;
+    while (secondGameAcceptSocket == SOCKET_ERROR) {
+        secondGameAcceptSocket = accept(mainSocket, NULL, NULL);
+    }
+    std::cout << "Client 2 connected." << std::endl;
+
+    int bytesReceivedFromMainGame = -1;
+    int bytesReceivedFromSecondGame = -1;
+
+    do {
+        // Clear
+        memset(&(firstClientMessage), '\0', sizeof(firstClientMessage));
+        memset(&(secondClientMessage), '\0', sizeof(secondClientMessage));
+        bytesReceivedFromMainGame =
+            recv(mainGameAcceptSocket, firstClientMessage, g_BUFFSIZE, 0);
+        bytesReceivedFromSecondGame =
+            recv(secondGameAcceptSocket, secondClientMessage, g_BUFFSIZE, 0);
+        sendToClient();
+    } while ((bytesReceivedFromMainGame > 0) ||
+             (bytesReceivedFromSecondGame > 0));
+
+    closesocket(mainGameAcceptSocket);
+    closesocket(secondGameAcceptSocket);
+    closesocket(mainSocket);
+    WSACleanup();
+    system("pause");
     return 0;
 }
 
-void processData(char *recievedBuffer) {
-    std::cout << "Received text: " << recievedBuffer << std::endl;
-
-    int position = findChar(recievedBuffer, BREAK_MESSAGE);
-    if (position != -1) {
-        memcpy(mainClientMessage, recievedBuffer, position);
-        memcpy(secondClientMessage, (recievedBuffer + position + 1),
-               strlen(recievedBuffer) / 2);
-    }
-
-    std::cout << "mainClientMessage 1: " << mainClientMessage << std::endl;
-    std::cout << "secondClientMessage 2: " << secondClientMessage << std::endl;
-}
-
 void sendToClient() {
-    char serverReply[g_BUFFSIZE] = "";
-    memset(&serverReply, '@', g_BUFFSIZE);
+    std::cout << "---------------------------------------------" << std::endl;
+    std::cout << "Received from client main: " << firstClientMessage
+              << std::endl;
+    std::cout << "Received from client second: " << secondClientMessage
+              << std::endl;
 
-    if (mainClientMessage[0] != mainGamePaused) {
-        // std::cout << "Zmiana w pierwszej" << std::endl;
-        mainGamePaused = mainClientMessage[0];
-        secondGamePaused = mainClientMessage[0];
-        serverReply[0] = '1';
-    } else if (secondClientMessage[0] != secondGamePaused) {
-        // std::cout << "Zmiana w drugiej" << std::endl;
-        secondGamePaused = secondClientMessage[0];
-        mainGamePaused = secondClientMessage[0];
-        serverReply[1] = '1';
+    memset(&(serverReplyToMainGame), '@', g_BUFFSIZE);
+    memset(&(serverReplyToSecondGame), '@', g_BUFFSIZE);
+
+    if (firstClientMessage[0] == '0') {
+        memcpy(&(mainGameMessage), &(firstClientMessage), g_BUFFSIZE);
+        memcpy(&(secondGameMessage), &(secondClientMessage), g_BUFFSIZE);
+    } else {
+        memcpy(&(mainGameMessage), &(secondClientMessage), g_BUFFSIZE);
+        memcpy(&(secondGameMessage), &(firstClientMessage), g_BUFFSIZE);
     }
-    // Red Ghost
-    serverReply[2] = mainClientMessage[2];
-    serverReply[3] = mainClientMessage[3];
-    serverReply[4] = mainClientMessage[4];
-    serverReply[5] = mainClientMessage[5];
 
-    // Orange Ghost
-    serverReply[6] = mainClientMessage[6];
-    serverReply[7] = mainClientMessage[7];
-    serverReply[8] = mainClientMessage[8];
-    serverReply[9] = mainClientMessage[9];
+    // Game pause
+    if (mainGameMessage[1] != mainGamePaused) {
+        // There was a change in main
+        mainGamePaused = mainGameMessage[1];
+        secondGamePaused = mainGameMessage[1];
+        serverReplyToSecondGame[0] = '1';
+    } else if (secondGameMessage[1] != secondGamePaused) {
+        // There was a change in second
+        secondGamePaused = secondGameMessage[1];
+        mainGamePaused = secondGameMessage[1];
+        serverReplyToMainGame[0] = '1';
+    }
 
-    // Blue Ghost
-    serverReply[10] = mainClientMessage[10];
-    serverReply[11] = mainClientMessage[11];
-    serverReply[12] = mainClientMessage[12];
-    serverReply[13] = mainClientMessage[13];
+    // Score points
+    int mainGameScorePoints = ((mainGameMessage[22] - '0') * 100) +
+                              ((mainGameMessage[23] - '0') * 10) +
+                              (mainGameMessage[24] - '0');
+    int secondGameScorePoints = ((secondGameMessage[6] - '0') * 100) +
+                                ((secondGameMessage[7] - '0') * 10) +
+                                (secondGameMessage[8] - '0');
+    scorePoints = mainGameScorePoints + secondGameScorePoints;
 
-    // Pink Ghost
-    serverReply[14] = mainClientMessage[14];
-    serverReply[15] = mainClientMessage[15];
-    serverReply[16] = mainClientMessage[16];
-    serverReply[17] = mainClientMessage[17];
+    // Server reply to main game
 
-    // Main Game Pacman
-    serverReply[18] = mainClientMessage[19];
-    serverReply[19] = mainClientMessage[20];
-    serverReply[20] = mainClientMessage[21];
-    serverReply[21] = mainClientMessage[22];
+    // Other pacman
+    serverReplyToMainGame[1] = secondGameMessage[2];
+    serverReplyToMainGame[2] = secondGameMessage[3];
+    serverReplyToMainGame[3] = secondGameMessage[4];
+    serverReplyToMainGame[4] = secondGameMessage[5];
 
-    // Second Game Pacman
-    serverReply[22] = secondClientMessage[2];
-    serverReply[23] = secondClientMessage[3];
-    serverReply[24] = secondClientMessage[4];
-    serverReply[25] = secondClientMessage[5];
-
-    // Score Points
-    int mainScorePoints = ((mainClientMessage[24] - '0') * 100) +
-                          ((mainClientMessage[25] - '0') * 10) +
-                          (mainClientMessage[26] - '0');
-    int secondScorePoints = ((secondClientMessage[7] - '0') * 100) +
-                            ((secondClientMessage[8] - '0') * 10) +
-                            (secondClientMessage[9] - '0');
-    scorePoints = mainScorePoints + secondScorePoints;
-
-    serverReply[26] = ((scorePoints - (scorePoints % 100)) / 100) + '0';
-    serverReply[27] = (((scorePoints % 100) - (scorePoints % 10)) / 10) + '0';
-    serverReply[28] = (scorePoints % 10) + '0';
+    serverReplyToMainGame[5] =
+        ((scorePoints - (scorePoints % 100)) / 100) + '0';
+    serverReplyToMainGame[6] =
+        (((scorePoints % 100) - (scorePoints % 10)) / 10) + '0';
+    serverReplyToMainGame[7] = (scorePoints % 10) + '0';
 
     // Game End Lose
-    serverReply[29] = mainClientMessage[28];
-    serverReply[30] = secondClientMessage[11];
+    serverReplyToMainGame[8] = secondGameMessage[9];
+
+    // Pacman eaten but not dead in second game
+    serverReplyToMainGame[9] = secondGameMessage[10];
+
+    // Pacman eats ghost in second game
+    serverReplyToMainGame[10] = secondGameMessage[11];
+    serverReplyToMainGame[11] = secondGameMessage[12];
+    serverReplyToMainGame[12] = secondGameMessage[13];
+    serverReplyToMainGame[13] = secondGameMessage[14];
+    serverReplyToMainGame[14] = secondGameMessage[15];
+
+    // Server reply to second game
+
+    // Red Ghost
+    serverReplyToSecondGame[1] = mainGameMessage[2];
+    serverReplyToSecondGame[2] = mainGameMessage[3];
+    serverReplyToSecondGame[3] = mainGameMessage[4];
+    serverReplyToSecondGame[4] = mainGameMessage[5];
+
+    // Orange Ghost
+    serverReplyToSecondGame[5] = mainGameMessage[6];
+    serverReplyToSecondGame[6] = mainGameMessage[7];
+    serverReplyToSecondGame[7] = mainGameMessage[8];
+    serverReplyToSecondGame[8] = mainGameMessage[9];
+
+    // Blue Ghost
+    serverReplyToSecondGame[9] = mainGameMessage[10];
+    serverReplyToSecondGame[10] = mainGameMessage[11];
+    serverReplyToSecondGame[11] = mainGameMessage[12];
+    serverReplyToSecondGame[12] = mainGameMessage[13];
+
+    // Pink Ghost
+    serverReplyToSecondGame[13] = mainGameMessage[14];
+    serverReplyToSecondGame[14] = mainGameMessage[15];
+    serverReplyToSecondGame[15] = mainGameMessage[16];
+    serverReplyToSecondGame[16] = mainGameMessage[17];
+
+    // Other pacman
+    serverReplyToSecondGame[17] = mainGameMessage[18];
+    serverReplyToSecondGame[18] = mainGameMessage[19];
+    serverReplyToSecondGame[19] = mainGameMessage[20];
+    serverReplyToSecondGame[20] = mainGameMessage[21];
+
+    // Score points
+    serverReplyToSecondGame[21] =
+        ((scorePoints - (scorePoints % 100)) / 100) + '0';
+    serverReplyToSecondGame[22] =
+        (((scorePoints % 100) - (scorePoints % 10)) / 10) + '0';
+    serverReplyToSecondGame[23] = (scorePoints % 10) + '0';
+
+    // Game End Lose
+    serverReplyToSecondGame[24] = mainGameMessage[25];
 
     // End
-    serverReply[g_BUFFSIZE - 1] = '\0';
+    serverReplyToMainGame[g_BUFFSIZE - 1] = '\0';
+    serverReplyToSecondGame[g_BUFFSIZE - 1] = '\0';
 
-    if (send(mainSocket, serverReply, strlen(serverReply), 0) == SOCKET_ERROR) {
-        std::cout << "Failed to send." << std::endl;
-    }
-    std::cout << "Server reply: " << serverReply << std::endl;
-}
-
-/*
-returns position of a char or -1 if not found
-*/
-int findChar(char *my_array, const char *my_char) {
-    int result = -1;
-    for (int i = 0; i < strlen(my_array); i++) {
-        if (my_array[i] == *my_char) {
-            result = i;
-            break;
+    if (firstClientMessage[0] == '0') {
+        if (send(mainGameAcceptSocket, serverReplyToMainGame, g_BUFFSIZE, 0) ==
+            SOCKET_ERROR) {
+            std::cout << "Failed to send." << std::endl;
+        }
+        if (send(secondGameAcceptSocket, serverReplyToSecondGame, g_BUFFSIZE,
+                 0) == SOCKET_ERROR) {
+            std::cout << "Failed to send." << std::endl;
+        }
+    } else {
+        if (send(secondGameAcceptSocket, serverReplyToMainGame, g_BUFFSIZE,
+                 0) == SOCKET_ERROR) {
+            std::cout << "Failed to send." << std::endl;
+        }
+        if (send(mainGameAcceptSocket, serverReplyToSecondGame, g_BUFFSIZE,
+                 0) == SOCKET_ERROR) {
+            std::cout << "Failed to send." << std::endl;
         }
     }
-    return result;
+
+    std::cout << "Sending..." << std::endl;
+
+    memset(&(serverReplyToMainGame), '\0', g_BUFFSIZE);
+    memset(&(serverReplyToSecondGame), '\0', g_BUFFSIZE);
 }

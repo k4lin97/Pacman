@@ -9,48 +9,50 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    blueghost.cpp \
-    choosewindow.cpp \
-    client.cpp \
-    closewindow.cpp \
-    gamedrawer.cpp \
-    ghost.cpp \
+    Ghosts/ghost.cpp \
+    Ghosts/blueghost.cpp \
+    Ghosts/orangeghost.cpp \
+    Ghosts/pinkghost.cpp \
+    Ghosts/redghost.cpp \
+    Player/player.cpp \
+    Player/pacman.cpp \
+    SinglePlayer/gamemanager.cpp \
+    SinglePlayer/map.cpp \
+    SinglePlayer/closewindow.cpp \
+    MainMenu/choosewindow.cpp \
+    Drawing/gamedrawer.cpp \
     main.cpp \
-    gamemanager.cpp \
-    maingamemanager.cpp \
-    map.cpp \
-    multiplayergamemanager.cpp \
-    networkconnection.cpp \
-    orangeghost.cpp \
-    pacman.cpp \
-    pinkghost.cpp \
-    player.cpp \
-    redghost.cpp \
-    secondgamemanager.cpp
+    MultiPlayer/maingameclient.cpp \
+    MultiPlayer/maingamemanager.cpp \
+    MultiPlayer/multiplayergamemanager.cpp \
+    MultiPlayer/networkconnection.cpp \
+    MultiPlayer/secondgameclient.cpp \
+    MultiPlayer/secondgamemanager.cpp
 
 HEADERS += \
-    blueghost.h \
-    choosewindow.h \
-    client.h \
-    closewindow.h \
-    gamedrawer.h \
-    gamemanager.h \
-    ghost.h \
-    maingamemanager.h \
-    map.h \
-    multiplayergamemanager.h \
-    networkconnection.h \
-    orangeghost.h \
-    pacman.h \
-    pinkghost.h \
-    player.h \
-    redghost.h \
-    secondgamemanager.h
+    Ghosts/blueghost.h \
+    Ghosts/ghost.h \
+    Ghosts/orangeghost.h \
+    Ghosts/pinkghost.h \
+    Ghosts/redghost.h \
+    Player/player.h \
+    Player/pacman.h \
+    SinglePlayer/gamemanager.h \
+    SinglePlayer/map.h \
+    SinglePlayer/closewindow.h \
+    MainMenu/choosewindow.h \
+    Drawing/gamedrawer.h \
+    MultiPlayer/maingameclient.h \
+    MultiPlayer/maingamemanager.h \
+    MultiPlayer/multiplayergamemanager.h \
+    MultiPlayer/networkconnection.h \
+    MultiPlayer/secondgameclient.h \
+    MultiPlayer/secondgamemanager.h
 
 FORMS += \
-    choosewindow.ui \
-    closewindow.ui \
-    gamemanager.ui
+    Forms/choosewindow.ui \
+    Forms/closewindow.ui \
+    Forms/gamemanager.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
